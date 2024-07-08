@@ -1,4 +1,5 @@
-const ws = new WebSocket('ws://iotmuz-production.up.railway.app:8080');
+const socketUrl = 'ws://myiot-production.up.railway.app:8080';
+const ws = new WebSocket(socketUrl);
 
 ws.onopen = function() {
   // Ma'lumotlarni so'rash
