@@ -43,9 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // HTTP serverni yaratish
-const server = http.createServer(app);
-
-server.listen(8080, () => {
+const server = app.listen(8080, () => {
   console.log('HTTP server 8080-portda ishga tushdi');
 });
 
