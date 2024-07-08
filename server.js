@@ -8,11 +8,11 @@ const app = express();
 
 // MySQL bazasiga ulanish
 const db = mysql.createConnection({
-  host: 'roundhouse.proxy.rlwy.net',
-  user: 'root',
-  password: 'yLLWiWRvrGCXsdduAlnPRozZfBzHKmCW',
-  database: 'railway',
-  port: 30726
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: process.env.MYSQL_PORT
 });
 
 db.connect((err) => {
