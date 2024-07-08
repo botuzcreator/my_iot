@@ -1,6 +1,6 @@
-// WebSocket serveringizning lokal IP manzilini kiriting
-//const socket = new WebSocket('ws://192.168.5.87:8080');
-var socket = window.socket;
+﻿// WebSocket serverining URL manzilini kiriting
+var wsGraphic = new WebSocket('ws://myiot-production.up.railway.app:8080');
+
 // Grafikni yaratish uchun boshlang'ich ma'lumotlar va konfiguratsiya
 const options = {
   series: [{
@@ -20,12 +20,10 @@ const options = {
     id: 'area-datetime',
     type: 'area',
     height: 240,
-    type: 'line',
     zoom: {
       type: 'x',
       enabled: true,
       autoScaleYaxis: true
-
     },
     animations: {
       enabled: true,
@@ -61,7 +59,11 @@ const options = {
 const chart = new ApexCharts(document.querySelector("#chart"), options);
 chart.render();
 
-socket.onmessage = function(event) {
+wsGraphic.onopen = function() {
+  console.log('WebSocketga ulanildi.');
+};
+
+wsGraphic.onmessage = function(event) {
   if (event.data instanceof Blob) {
     const reader = new FileReader();
     

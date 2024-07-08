@@ -1,27 +1,25 @@
-const WebSocket = require('ws');
-
-// WebSocket serverining URL manzilini kiriting
+﻿// WebSocket serverining URL manzilini kiriting
 const socketUrl = 'ws://iotmuz-production.up.railway.app:8080';
 let socket;
 
 function connectWebSocket() {
   socket = new WebSocket(socketUrl);
 
-  socket.on('open', function open() {
+  socket.onopen = function(event) {
     console.log('WebSocketga ulanildi.');
-  });
+  };
 
-  socket.on('error', function error(err) {
-    console.error('WebSocket xatosi:', err);
-  });
+  socket.onerror = function(error) {
+    console.error('WebSocket xatosi:', error);
+  };
 
-  socket.on('close', function close() {
+  socket.onclose = function(event) {
     console.log('WebSocket ulanish yopildi. Qayta urinish boshlanmoqda...');
     // Ulanishni qayta tiklash uchun biroz vaqt kutamiz
     setTimeout(connectWebSocket, 5000); // 5 soniyadan keyin qayta urinish
-  });
+  };
 
-  socket.on('message', function incoming(event) {
+  socket.onmessage = function(event) {
     // Agar xabar Blob obyekti bo'lsa, uni o'qish kerak
     if (event.data instanceof Blob) {
       // Blob obyektini o'qish uchun FileReader yaratamiz
@@ -49,7 +47,7 @@ function connectWebSocket() {
       // Blob obyektini o'qishni boshlaymiz
       reader.readAsText(event.data);
     } else {
-      const message = event.data.toString();
+      const message = event.data;
       console.log('Qabul qilingan xabar: ' + message);
 
       // Ma'lumotlarni parsing qilish
@@ -64,7 +62,9 @@ function connectWebSocket() {
       document.getElementById('param5').textContent = data[4];
       document.getElementById('param6').textContent = data[5];
     }
-  });
+  };
 }
 
-connectWebSocket(); // WebSocketga ulanish funksiyasini chaqiramiz
+document.addEventListener('DOMContentLoaded', (event) => {
+  connectWebSocket(); // WebSocketga ulanish funksiyasini chaqiramiz
+});
