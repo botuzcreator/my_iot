@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MZ IOT</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="client.js"></script>
+  
+  
+  <style>
+    /* Orqa fon uchun blur effekti */
+    .blur-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: white; /* Orqa fonni oq rangga o'zgartirish */
+      filter: blur(5px);
+      z-index: 999; /* Blur effektini boshqa elementlardan pastroqda joylashtirish */
+    }
+
+    /* Login formasini blursiz ko'rsatish */
+    .login-form {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000; /* Login formasini blur effektidan ustun qilish */
+      display: block; /* Formani ko'rsatish */
+    }
+  </style>
+</head>
+<body class="bg-blue-100">
+  <!-- Blur effekti uchun qo'shimcha div -->
+  <div class="blur-background"></div>
+  
+  <h2 class="text-lg font-semibold mb-1 text-center" style="font-family: 'Times New Roman', serif; color: rgb(97, 64, 245);">MAXSUS QURILMANI MASOFADAN BOSHQARISH PANELI</h2>
+  
+  <div class="container mx-auto px-4 sm:px-6 lg:px-2">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+      
+      <!-- Current Status Panel -->
+      <div style="background-color: #12ccbcd7;" class="p-3 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-2 text-center" style="font-family: 'Times New Roman', serif; color: rgb(8, 8, 1);">JORIY HOLAT</h2>
+        <div class="grid grid-cols-2 gap-10">
+          <div class="grid grid-cols-2 gap-10">
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Harorat </div>
+            <div id="param1" class="h-6 bg-white rounded" style="text-align: center;"></div>
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Namlik </div>
+            <div id="param2" class="h-6 bg-white rounded" style="text-align: center;"></div>
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Yoritilganlik </div>
+            <div id="param3" class="h-6 bg-white rounded" style="text-align: center;"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-10">
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Nurlanish </div>
+            <div id="param4" class="h-6 bg-white rounded" style="text-align: center;"></div>
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Infraqizil </div>
+            <div id="param5" class="h-6 bg-white rounded" style="text-align: center;"></div>
+            <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;">Ultrafiolet </div>
+            <div id="param6" class="h-6 bg-white rounded" style="text-align: center;"></div>
+          </div>
+        </div>
+      </div>
+      <script src="client.js"></script>
+
+
+      <!-- Statistics Panel -->
+      <style>
+      /* Umumiy jadval stilini belgilash */
+      .table-style {
+        width: 100%;
+        border-collapse: collapse; /* Chegaralar bir-biriga yopishib ketishining oldini oladi */
+        background-color: white; /* Oq fon rangi */
+      }
+
+      /* Barcha qatorlarni va hujayralarni stilini belgilash */
+      .table-style th,
+      .table-style td {
+        border: 2px solid #4b15e0; /* Hujayralarning chegaralarini ko'rsatish */
+        padding: 4px; /* Atrof-muhit */
+        text-align: center; /* Matn markazlashuvi */
+        vertical-align: middle; /* Matnni vertikal markazga o'zgartirish */
+        font-size: 12px; /* Matn o'lchamini belgilash */
+      }
+
+      /* Sarlavha qatorini stilini belgilash */
+      .table-style thead tr {
+        background-color: #0044cc; /* Sarlavha fon rangi */
+        color: white; /* Sarlavha matn rangi */
+      }
+      
+      
+
+      </style>
+      <div style="background-color: #cfec27d7;" class="p-3 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-0,5 text-center" style="font-family: 'Times New Roman', serif; color: rgb(97, 64, 245);">STATISTIKA</h2>
+        <div class="grid grid-cols-2 gap-5 p-0,1">
+          <div>
+            <h2 class="text-lg font-semibold mb-1 text-center" style="font-family: 'Times New Roman', serif; font-size: 14px;">O'rtacha harorat</h2>
+            <div class="space-y-2 overflow-y-auto" style="max-height: 200px;">
+              <table id="haroratTable" class="table-style">
+                <thead>
+                  <tr>
+                    <th class="px-9 py-1 bg-blue-600" style="font-family: 'Times New Roman', serif; text-align: center; font-size: 12px; font-weight: bold; color: rgb(255, 255, 255);">Sana</th>
+                    <th class="px-3 py-1 bg-blue-500" style="font-family: 'Times New Roman', serif; text-align: center; font-size: 12px; font-weight: bold; color: white;">Harorat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold mb-1 text-center" style="font-family: 'Times New Roman', serif; font-size: 14px;">O'rtacha nurlanish</h2>
+            <div class="space-y-2 overflow-y-auto" style="max-height: 200px;">
+              <table id="nurlanishTable" class="table-style">
+                <thead>
+                  <tr>
+                    <th class="px-8 py-1 bg-blue-600" style="font-family: 'Times New Roman', serif; text-align: center; font-size: 12px; font-weight: bold; color: rgb(255, 255, 255);">Sana</th>
+                    <th class="px-4 py-1 bg-blue-500" style="font-family: 'Times New Roman', serif; text-align: center; font-size: 12px; font-weight: bold; color: white;">Nurlanish</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="table.js"></script>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+      <!-- Adjustment Panel -->
+      <div class="bg-yellow-400 p-3 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-2 text-center" style="font-family: 'Times New Roman', serif; color: rgb(35, 13, 233);">BOSHQARUV PANELI</h2>
+        <div class="grid gap-2">
+          <!-- Parametrlar -->
+          <!-- 5 ta parametr uchun 2 tadan kiritish maydoni -->
+            <div class="grid grid-cols-2 gap-1">
+              <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Infraqizil chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Ultra-viy chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Qizil chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Yashil chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Ko'k chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Olovrang chiroq interval:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Umumiy yonish vaqti:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+
+            <!-- Qolgan parametrlar uchun 1 tadan kiritish maydoni -->
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Harorat:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+            <div class="flex items-center justify-between" style="margin-right: 30px;">
+              <div style="font-family: 'Times New Roman', serif; font-weight: bold; color: black;font-size: 14px;">Namlik:</div>
+              <input type="text" class="border border-gray-300 rounded px-2 py-0.5 w-20">
+            </div>
+          
+          </div>
+          <!-- SET tugmasi -->
+          <button id="setButton" class="bg-blue-500 text-white px-2 py-1 w-32 rounded hover:bg-green-500 transition duration-300 mx-auto" style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 16px;">Sozlash</button>
+        </div>
+      </div>
+      <script src="control.js"></script>
+      
+
+      <!-- Graph Panel -->
+      <div style="background-color: #ffffff;" class="p-3 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-2 text-center" style="font-family: 'Times New Roman', serif; color: rgb(35, 13, 233);">VIZUAL AXBOROTLAR</h2>
+        <!-- Grafikni joylash uchun bo'sh div -->
+        <div id="chart" class="h-32 w-full">
+          <script src="graphic.js"></script>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+  </div>
+
+
+  <!-- Login forma -->
+  <div id="loginForm" class="login-form">
+    <h2 class="text-lg font-semibold mb-4 text-center">TIZIMGA KIRISH</h2>
+    <form class="flex flex-col items-center" onsubmit="return false;">
+      <input type="text" id="username" placeholder="Loginni kiriting" class="border border-gray-300 rounded px-2 py-1 mb-2">
+      <input type="password" id="password" placeholder="Parolni kiriting" class="border border-gray-300 rounded px-2 py-1 mb-2">
+      <button onclick="validateLogin()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 w-full">KIRISH</button>
+    </form>
+  </div>
+  
+
+  <script>
+    // Login tugmasi bosilganda ishga tushadigan funksiya
+    function validateLogin() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+      var encodedUsername = btoa(username);
+      var encodedPassword = btoa(password);
+
+      // Tekshirish
+      if (encodedUsername === "MTEx" && encodedPassword === "MTEx") {
+        var loginTime = new Date().getTime();
+        localStorage.setItem('loginTime', loginTime);
+        document.body.removeChild(document.querySelector('.blur-background')); // Blur effektini olib tashlash
+        var loginForm = document.getElementById('loginForm');
+        loginForm.style.display = 'none'; // Login formani yashirish
+       
+      } else {
+        alert("Noto'g'ri login yoki parol kiritildi. Sizga kirish ruxsat etilmadi!Iltimos, loginni kiriting:");
+      }
+    }
+
+    // Agar foydalanuvchi kirgan bo'lsa, blur effektini olib tashlash
+    window.onload = function() {
+      var loginTime = localStorage.getItem('loginTime');
+      var currentTime = new Date().getTime();
+      
+      if (loginTime && currentTime - loginTime < 3600000) { // 3600000 millisekund = 1 soat
+        document.body.removeChild(document.querySelector('.blur-background')); // Blur effektini olib tashlash
+        var loginForm = document.getElementById('loginForm');
+        loginForm.style.display = 'none'; // Login formani yashirish
+      } else {
+        document.getElementById('loginForm').style.display = 'block'; // Login formasini ko'rsatish
+      }
+    }
+  </script>
+
+</body>
+</html>
