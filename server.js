@@ -53,23 +53,28 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
-    
+
     try {
         const msg = JSON.parse(message);
-        
+        console.log('Parsed message:', msg);
+
         // Agar xabar 'request-data' so'rovini o'z ichiga olsa va table.js dan kelgan bo'lsa
         if (msg.type === 'request-data') {
+          console.log('Processing request-data');
           // Ma'lumotlar bazasidan so'rov yuborish va natijalarni faqat so'rov yuborgan klientga qaytarish
           const sql = `SELECT DATE(sanaVaVaqt) as sana, AVG(harorat) as avgHarorat, AVG(nurlanish) as avgNurlanish FROM sensor_data GROUP BY DATE(sanaVaVaqt) ORDER BY DATE(sanaVaVaqt) DESC LIMIT 5`;
           db.query(sql, (err, results) => {
             if (err) {
+              console.error('Error querying database:', err.message);
               ws.send(JSON.stringify({ error: err.message }));
               return;
             }
+            console.log('Query results:', results);
             ws.send(JSON.stringify(results));
           });
         }
       } catch (e) {
+        console.error('Error parsing message:', e.message);
         // Agar xabar JSON emas bo'lsa, uni barcha klientlarga yuborish
         wss.clients.forEach(function each(client) {
           if (client.readyState === WebSocket.OPEN) {
@@ -80,7 +85,7 @@ wss.on('connection', function connection(ws) {
 
       try {
         const msg = JSON.parse(message);
-    
+
         if (msg.type === 'control-data' && devices.has(msg.deviceId)) {
           console.log(`Qurilma ${msg.deviceId} uchun xabar : ${msg.data}`);
           const deviceWs = devices.get(msg.deviceId);
@@ -115,21 +120,21 @@ wss.on('connection', function connection(ws) {
         const now = new Date();
         const offset = 5 * 60 * 60000; // GMT+5 uchun millisekundlarda vaqt farqi
         const localDateTime = new Date(now.getTime() + offset);
-      
+
         const year = localDateTime.getUTCFullYear();
         const month = localDateTime.getUTCMonth() + 1; // Oylar 0 dan boshlanadi
         const day = localDateTime.getUTCDate();
         const hour = localDateTime.getUTCHours();
         const minute = localDateTime.getUTCMinutes();
         const second = localDateTime.getUTCSeconds();
-      
+
         // Raqamlarni ikki xonali formatga olib kelish
         const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
-      
+
         return `${formattedDate} ${formattedTime}`;
       }
-      
+
       const sanaVaVaqt = getLocalDateTime();
       console.log(sanaVaVaqt);
 
