@@ -1,5 +1,5 @@
 ﻿// WebSocket serverining URL manzilini kiriting
-const socketUrl = 'ws://iotmuz-production.up.railway.app:8080';
+const socketUrl = 'ws://myiot-production.up.railway.app:8080';
 let socket;
 
 function connectWebSocket() {
