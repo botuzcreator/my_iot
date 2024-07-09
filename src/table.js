@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-  ws.onopen = function() {
+  socket.onopen = function() {
     // Ma'lumotlarni so'rash
-    ws.send(JSON.stringify({ type: 'request-data' }));
+    socket.send(JSON.stringify({ type: 'request-data' }));
   };
 
-  ws.onmessage = function(event) {
+  socket.onmessage = function(event) {
     if (event.data instanceof Blob) {
       // Blob obyektini matnga aylantirish va konsolga chiqarish
       event.data.text().then(function(text) {
