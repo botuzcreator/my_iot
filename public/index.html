@@ -6,6 +6,18 @@
   <title>MZ IOT</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.4/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    var socket = new WebSocket('wss://myiot-production.up.railway.app:8080');
+    socket.onopen = function() {
+      console.log('WebSocket connection established.');
+    };
+    socket.onerror = function(error) {
+      console.error('WebSocket Error:', error);
+    };
+    socket.onclose = function() {
+      console.log('WebSocket connection closed.');
+    };
+  </script>
   <script src="/src/client.js"></script>
   
   
