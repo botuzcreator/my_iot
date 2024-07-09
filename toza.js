@@ -8,11 +8,11 @@ const app = express();
 
 // MySQL bazasiga ulanish
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
 db.connect((err) => {
@@ -43,8 +43,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // HTTP serverni yaratish
-const server = app.listen(process.env.PORT || 8080, () => {
-  console.log(`HTTP server ${process.env.PORT || 8080}-portda ishga tushdi`);
+const server = app.listen(8080, () => {
+  console.log('HTTP server 8080-portda ishga tushdi');
 });
 
 // WebSocket serverni yaratish va HTTP server bilan birgalikda ishlatish
