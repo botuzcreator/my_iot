@@ -1,60 +1,51 @@
-const socketUrl = 'ws://myiot-production.up.railway.app:8080';
-const ws = new WebSocket(socketUrl);
-
-ws.onopen = function() {
-  // Ma'lumotlarni so'rash
-  ws.send(JSON.stringify({ type: 'request-data' }));
-};
-
-ws.onmessage = function(event) {
-  if (event.data instanceof Blob) {
-    // Blob obyektini matnga aylantirish va konsolga chiqarish
-    event.data.text().then(function(text) {
-      console.log('Qabul qilingan xabar (Blob matni):', text);
-      // Agar Blob matnini ham ishlov berish kerak bo'lsa, shu yerda qo'shishingiz mumkin
-    });
-  } else {
-    console.log('Qabul qilingan xabar (Text yoki JSON):', event.data);
-    try {
-      const data = JSON.parse(event.data);
+document.addEventListener('DOMContentLoaded', () => {
+  socket.onmessage = function(event) {
+    if (event.data instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        const message = reader.result;
+        console.log('Qabul qilingan xabar: ' + message);
+        const data = message.split(';');
+        console.log('Split qilingan ma\'lumotlar:', data);
+        updateHaroratTable(data);
+        updateNurlanishTable(data);
+      };
+      reader.readAsText(event.data);
+    } else {
+      const message = event.data.toString();
+      console.log('Qabul qilingan xabar: ' + message);
+      const data = message.split(';');
+      console.log('Split qilingan ma\'lumotlar:', data);
       updateHaroratTable(data);
       updateNurlanishTable(data);
-    } catch (e) {
-      console.error('Malumotlarni tahlil qilishda xato yuz berdi:', e);
-      // Agar matn formatida kelgan ma'lumotni ishlov berish kerak bo'lsa, bu yerda qo'shishingiz mumkin
     }
-  }
-};
+  };
 
-function updateHaroratTable(data) {
-  const tableBody = document.getElementById('haroratTable').getElementsByTagName('tbody')[0];
-  updateTable(tableBody, data, 'avgHarorat');
-}
-
-function updateNurlanishTable(data) {
-  const tableBody = document.getElementById('nurlanishTable').getElementsByTagName('tbody')[0];
-  updateTable(tableBody, data, 'avgNurlanish');
-}
-
-function updateTable(tableBody, data, key) {
-  if (!tableBody) {
-    console.error('Jadval tanasi topilmadi.');
-    return;
+  function updateHaroratTable(data) {
+    const tableBody = document.getElementById('haroratTable').getElementsByTagName('tbody')[0];
+    updateTable(tableBody, data, 'avgHarorat');
   }
 
-  // Jadvalda 5 qatordan ko'p bo'lsa, eng qadimgisini o'chirish
-  while (tableBody.rows.length > 5) {
-    tableBody.deleteRow(0);
+  function updateNurlanishTable(data) {
+    const tableBody = document.getElementById('nurlanishTable').getElementsByTagName('tbody')[0];
+    updateTable(tableBody, data, 'avgNurlanish');
   }
 
-  // Yangi ma'lumotlar bilan jadvalni yangilash
-  data.forEach(row => {
-    if (tableBody.rows.length >= 5) {
-      // Agar jadvalda allaqachon 5 qator bo'lsa, eng qadimgisini o'chirish
+  function updateTable(tableBody, data, key) {
+    if (!tableBody) {
+      console.error('Jadval tanasi topilmadi.');
+      return;
+    }
+    while (tableBody.rows.length > 5) {
       tableBody.deleteRow(0);
     }
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${row.sana}</td><td>${parseFloat(row[key]).toFixed(2)}</td>`;
-    tableBody.appendChild(tr);
-  });
-}
+    data.forEach(row => {
+      if (tableBody.rows.length >= 5) {
+        tableBody.deleteRow(0);
+      }
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${row.sana}</td><td>${parseFloat(row[key]).toFixed(2)}</td>`;
+      tableBody.appendChild(tr);
+    });
+  }
+});
