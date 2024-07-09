@@ -1,5 +1,5 @@
 ﻿// socket.js
-window.socket = new WebSocket('ws://myiot-production.up.railway.app:8080');
+window.socket = new WebSocket('wss://myiot-production.up.railway.app');
 
 socket.onopen = function() {
   console.log('WebSocketga ulanildi.');
