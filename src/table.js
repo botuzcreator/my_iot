@@ -1,5 +1,3 @@
-import ws from './socket.js';
-
 document.addEventListener('DOMContentLoaded', () => {
   ws.onopen = function() {
     // Ma'lumotlarni so'rash
