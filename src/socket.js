@@ -1,4 +1,4 @@
-﻿const socket = new WebSocket('ws://myiot-production.up.railway.app:8080');
+﻿const socket = new WebSocket('wss://myiot-production.up.railway.app:8080');
 
 socket.onopen = function() {
   console.log('WebSocket connection established.');
