@@ -48,7 +48,7 @@ const server = app.listen(8080, () => {
 });
 
 // WebSocket serverni yaratish va HTTP server bilan birgalikda ishlatish
-const wss = new WebSocket.Server({ server });
+const ws = new WebSocket.Server({ server });
 
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
