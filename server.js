@@ -6,6 +6,20 @@ const devices = new Map(); // Device'larni saqlash uchun Map
 
 const app = express();
 
+// Middleware to redirect HTTP to HTTPS
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    if (req.method === 'POST') {
+      // Redirect POST requests to GET requests over HTTPS
+      return res.redirect(307, `https://${req.headers.host}${req.url}`);
+    } else {
+      // Redirect GET requests to HTTPS
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+  }
+  next();
+});
+
 // MySQL bazasiga ulanish
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
@@ -43,8 +57,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // HTTP serverni yaratish
-const server = app.listen(8080, () => {
-  console.log('HTTP server 8080-portda ishga tushdi');
+const port = process.env.PORT || 8080;
+const server = app.listen(port, () => {
+  console.log(`HTTP server ${port}-portda ishga tushdi`);
 });
 
 // WebSocket serverni yaratish va HTTP server bilan birgalikda ishlatish

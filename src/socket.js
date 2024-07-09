@@ -12,6 +12,6 @@ socket.onerror = function(error) {
 socket.onclose = function() {
   console.log('WebSocket ulanish yopildi. Qayta urinish boshlanmoqda...');
   setTimeout(function() {
-    socket = new WebSocket('wss://myiot-production.up.railway.app');
+    window.socket = new WebSocket('wss://myiot-production.up.railway.app');
   }, 5000);
 };
