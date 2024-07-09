@@ -50,7 +50,7 @@ const server = app.listen(8080, () => {
 // WebSocket serverni yaratish va HTTP server bilan birgalikda ishlatish
 const ws = new WebSocket.Server({ server });
 
-wss.on('connection', function connection(ws) {
+ws.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
 
@@ -77,7 +77,7 @@ wss.on('connection', function connection(ws) {
       } catch (e) {
         console.error('Error parsing message:', e.message);
         // Agar xabar JSON emas bo'lsa, uni barcha klientlarga yuborish
-        wss.clients.forEach(function each(client) {
+        ws.clients.forEach(function each(client) {
           if (client.readyState === WebSocket.OPEN) {
             client.send(message);
           }
