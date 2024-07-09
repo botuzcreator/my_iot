@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   socket.onmessage = function(event) {
+    console.log('Serverdan qabul qilingan xabar:', event);
     if (event.data instanceof Blob) {
       // Blob obyektini matnga aylantirish va konsolga chiqarish
       event.data.text().then(function(text) {

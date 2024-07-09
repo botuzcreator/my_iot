@@ -71,6 +71,7 @@ wss.on('connection', function connection(ws) {
             }
             console.log('Query results:', results);
             ws.send(JSON.stringify(results));
+            console.log('Javob yuborildi:', JSON.stringify(results));
           });
         }
       } catch (e) {
