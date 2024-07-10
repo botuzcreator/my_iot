@@ -1,4 +1,4 @@
-const wss = new WebSocket('wss1:myiot-production.up.railway.app:443');
+const  wss1 = new WebSocket('wss1:myiot-production.up.railway.app:443');
 
 wss1.onopen = function() {
   // Ma'lumotlarni so'rash
