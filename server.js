@@ -99,7 +99,7 @@ wss.on('connection', function connection(ws) {
         });
       }
 
-     try {
+      try {
         const msg = JSON.parse(message);
 
         if (msg.type === 'control-data' && devices.has(msg.deviceId)) {
