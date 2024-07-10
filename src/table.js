@@ -1,11 +1,11 @@
-const  wss1 = new WebSocket('wss1:myiot-production.up.railway.app:443');
+const  wss = new WebSocket('wss:myiot-production.up.railway.app:443');
 
-wss1.onopen = function() {
+wss.onopen = function() {
   // Ma'lumotlarni so'rash
-  wss1.send(JSON.stringify({ type: 'request-data' }));
+  wss.send(JSON.stringify({ type: 'request-data' }));
 };
 
-wss1.onmessage = function(event) {
+wss.onmessage = function(event) {
   if (event.data instanceof Blob) {
     // Blob obyektini matnga aylantirish va konsolga chiqarish
     event.data.text().then(function(text) {
