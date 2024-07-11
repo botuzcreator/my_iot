@@ -2,25 +2,20 @@ const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
 const mysql = require('mysql2');
-const devices = new Map(); // Device'larni saqlash uchun Map
+const devices = new Map();
 
 const app = express();
 
-// Middleware to redirect HTTP to HTTPS
+// Middleware to ensure HTTPS
 app.use((req, res, next) => {
   if (req.headers['x-forwarded-proto'] !== 'https') {
-    if (req.method === 'POST') {
-      // Redirect POST requests to GET requests over HTTPS
-      return res.redirect(307, `https://${req.headers.host}${req.url}`);
-    } else {
-      // Redirect GET requests to HTTPS
-      return res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
+    const statusCode = req.method === 'POST' ? 307 : 301;
+    return res.redirect(statusCode, `https://${req.headers.host}${req.url}`);
   }
   next();
 });
 
-// MySQL bazasiga ulanish
+// Connect to MySQL database
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -29,143 +24,103 @@ const db = mysql.createConnection({
   port: process.env.MYSQLPORT
 });
 
-db.connect((err) => {
+db.connect(err => {
   if (err) {
-    return console.error('Error connecting to MySQL:', err.message);
+    console.error('Error connecting to MySQL:', err.message);
+    return;
   }
-  console.log('MySQL bazasiga ulandi.');
+  console.log('Connected to MySQL database.');
 });
 
-// sensor_data jadvalini yaratish
-db.query(`CREATE TABLE IF NOT EXISTS sensor_data (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  sanaVaVaqt DATETIME,
-  harorat FLOAT,
-  namlik FLOAT,
-  yoritilganlik FLOAT,
-  nurlanish FLOAT,
-  yoniqRang VARCHAR(50),
-  ultHolati VARCHAR(50)
-)`, (err) => {
+// Ensure the sensor_data table exists
+db.query(`
+  CREATE TABLE IF NOT EXISTS sensor_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sanaVaVaqt DATETIME,
+    harorat FLOAT,
+    namlik FLOAT,
+    yoritilganlik FLOAT,
+    nurlanish FLOAT,
+    yoniqRang VARCHAR(50),
+    ultHolati VARCHAR(50)
+  )
+`, err => {
   if (err) {
     console.error('Error creating table:', err.message);
   }
 });
 
-// Statik fayllarni xizmat qilish uchun express.static'dan foydalanish
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
-// HTTP serverni yaratish
+// Start HTTP server
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
-  console.log(`HTTP server ${port}-portda ishga tushdi`);
+  console.log(`HTTP server running on port ${port}`);
 });
 
-// WebSocket serverni yaratish va HTTP server bilan birgalikda ishlatish
+// Setup WebSocket server
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
+wss.on('connection', ws => {
+  ws.on('message', message => {
+    console.log('Received:', message);
+    processMessage(ws, message);
+  });
 
-    try {
-      const msg = JSON.parse(message);
-      console.log('Parsed message:', msg);
-
-      switch (msg.type) {
-        case 'request-data':
-          console.log('Processing request-data');
-          const sql = `SELECT DATE(sanaVaVaqt) as sana, AVG(harorat) as avgHarorat, AVG(nurlanish) as avgNurlanish FROM sensor_data GROUP BY DATE(sanaVaVaqt) ORDER BY DATE(sanaVaVaqt) DESC LIMIT 5`;
-          db.query(sql, (err, results) => {
-            if (err) {
-              console.error('Error querying database:', err.message);
-              ws.send(JSON.stringify({ error: err.message }));
-              return;
-            }
-            console.log('Query results:', results);
-            ws.send(JSON.stringify(results));
-            console.log('Javob yuborildi:', JSON.stringify(results));
-          });
-          break;
-
-        case 'control-data':
-          console.log(`Qurilma ${msg.deviceId} uchun xabar : ${msg.data}`);
-          if (devices.has(msg.deviceId)) {
-            const deviceWs = devices.get(msg.deviceId);
-            deviceWs.send(msg.data);  // Device'ga ma'lumot yuborish
-            console.log(`Qurilma ${msg.deviceId} uchun xabar yuborildi.`);
-          } else {
-            console.log(`Device ${msg.deviceId} not found.`);
-          }
-          break;
-
-        default:
-          console.log('Noma'lum xabar turi:', msg.type);
-          break;
+  ws.on('close', () => {
+    console.log('Connection closed');
+    devices.forEach((value, key) => {
+      if (value === ws) {
+        devices.delete(key);
+        console.log(`Device ${key} disconnected`);
       }
-    } catch (e) {
-      console.error('Error parsing message:', e.message);
-      wss.clients.forEach(function each(client) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
-    }
+    });
   });
 });
 
-    // Xabarni ajratish
-    const messageText = message.toString();
-    const data = messageText.split(';');
-    if (data.length === 7) {
-      const [harorat, namlik, yoritilganlik, nurlanish, yoniqRang, ultHolati, deviceId] = data;
-      console.log(`Device ID: ${deviceId}`);
-      // Device ID bilan bog'liq WebSocket'ni saqlab qo'yish
-      // Agar device allaqachon ro'yxatdan o'tgan bo'lsa, uni qayta qo'shmaslik
-      if (!devices.has(deviceId)) {
-        // Device ID bilan bog'liq WebSocket'ni saqlab qo'yish
-        devices.set(deviceId, ws);
-        console.log(`Device registered: ${deviceId}`);
-      } else {
-        console.log(`Device ${deviceId} is already registered.`);
-      }
-
-      function getLocalDateTime() {
-        const now = new Date();
-        const offset = 5 * 60 * 60000; // GMT+5 uchun millisekundlarda vaqt farqi
-        const localDateTime = new Date(now.getTime() + offset);
-
-        const year = localDateTime.getUTCFullYear();
-        const month = localDateTime.getUTCMonth() + 1; // Oylar 0 dan boshlanadi
-        const day = localDateTime.getUTCDate();
-        const hour = localDateTime.getUTCHours();
-        const minute = localDateTime.getUTCMinutes();
-        const second = localDateTime.getUTCSeconds();
-
-        // Raqamlarni ikki xonali formatga olib kelish
-        const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
-
-        return `${formattedDate} ${formattedTime}`;
-      }
-
-      const sanaVaVaqt = getLocalDateTime();
-      console.log(sanaVaVaqt);
-
-      // Qabul qilingan ma'lumotlarni ma'lumotlar bazasiga kiritish
-      const sql = `INSERT INTO sensor_data (sanaVaVaqt, harorat, namlik, yoritilganlik, nurlanish, yoniqRang, ultHolati) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-      db.query(sql, [sanaVaVaqt, harorat, namlik, yoritilganlik, nurlanish, yoniqRang, ultHolati], (err, results) => {
-        if (err) {
-          return console.error('Error inserting data:', err.message);
-        }
-        console.log('Sensor ma\'lumotlari ma\'lumotlar bazasiga saqlandi.');
-      });
+function processMessage(ws, message) {
+  try {
+    const msg = JSON.parse(message);
+    switch (msg.type) {
+      case 'request-data':
+        handleRequestData(ws);
+        break;
+      case 'control-data':
+        handleControlData(msg);
+        break;
+      default:
+        console.log('Unknown message type:', msg.type);
     }
-  });
-});
+  } catch (e) {
+    console.error('Error parsing message:', e.message);
+  }
+}
 
-// Server yopilganda ma'lumotlar bazasini yopish
+function handleRequestData(ws) {
+  const sql = 'SELECT DATE(sanaVaVaqt) as sana, AVG(harorat) as avgHarorat, AVG(nurlanish) as avgNurlanish FROM sensor_data GROUP BY DATE(sanaVaVaqt) ORDER BY DATE(sanaVaVaqt) DESC LIMIT 5';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error querying database:', err.message);
+      ws.send(JSON.stringify({ error: err.message }));
+      return;
+    }
+    ws.send(JSON.stringify(results));
+  });
+}
+
+function handleControlData(msg) {
+  if (devices.has(msg.deviceId)) {
+    const deviceWs = devices.get(msg.deviceId);
+    deviceWs.send(msg.data);
+    console.log(`Sent message to device ${msg.deviceId}:`, msg.data);
+  } else {
+    console.log(`Device ${msg.deviceId} not found`);
+  }
+}
+
+// Close the database connection when the server shuts down
 process.on('exit', () => {
   db.end();
 });
