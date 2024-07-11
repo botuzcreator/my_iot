@@ -1,0 +1,126 @@
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <WebSocketsClient.h>
+#include <SoftwareSerial.h>
+
+// Define the RX and TX pins
+#define RX_PIN D6 // D6 = GPIO12
+#define TX_PIN D5 // D5 = GPIO14
+
+SoftwareSerial arduino(RX_PIN, TX_PIN); // RX, TX
+
+// WiFi tarmoq ma'lumotlari
+const char* ssid = "Islomnur";
+const char* password = "parolter99AP";
+
+// WebSocket server manzili va porti
+const char* webSocket_server_host = "192.168.100.24";
+const uint16_t webSocket_server_port = 8080;
+
+// WebSocket klientini yaratish
+WebSocketsClient webSocket;
+
+
+void handleDisconnected() {
+  Serial.println("[WebSocket] Serverga ulanish uzildi.");
+}
+
+void handleConnected() {
+  Serial.println("[WebSocket] Serverga ulanish o'rnatildi.");
+}
+
+void handleTextMessage(uint8_t * payload) {
+  Serial.printf("[WebSocket] Serverdan xabar keldi: %s\n", payload);
+  String message = String((char*)payload);
+  message.trim(); // Ortiqcha bo'sh joylarni olib tashlash
+
+  // Arduino'ga xabarni yuborishdan oldin yangi qator belgisini qo'shish
+  message += "\n";
+  arduino.print(message); // Arduino'ga yuborish
+
+  Serial.print("Arduino'ga yuborilgan xabar: ");
+  Serial.println(message);
+}
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+      handleDisconnected();
+      break;
+    case WStype_CONNECTED:
+      handleConnected();
+      break;
+    case WStype_TEXT:
+      handleTextMessage(payload);
+      break;
+  }
+}
+
+
+
+
+
+
+void setup() {
+  Serial.begin(9600);
+  arduino.begin(9600);
+  while (!Serial) continue; 
+  // WiFi'ga ulanish
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("WiFi'ga ulanildi. IP manzil: ");
+  Serial.println(WiFi.localIP());
+
+  // WebSocket hodisalarini sozlash
+  webSocket.begin(webSocket_server_host, webSocket_server_port);
+  webSocket.onEvent(webSocketEvent);
+  
+}
+
+void loop() {
+    webSocket.loop();
+
+    if (arduino.available()) {
+        String data = arduino.readStringUntil('\n');
+        data.trim();
+        Serial.println("Received data from Arduino 2: " + data);
+
+        if (!data.isEmpty()) {
+            // Ma'lumotni ajratish
+            int firstSemicolon = data.indexOf(';');
+            int secondSemicolon = data.indexOf(';', firstSemicolon + 1);
+            int thirdSemicolon = data.indexOf(';', secondSemicolon + 1);
+            int fourthSemicolon = data.indexOf(';', thirdSemicolon + 1);
+            int fifthSemicolon = data.indexOf(';', fourthSemicolon + 1);
+
+            // Agar beshinchi semikolon topilmasa, ma'lumot noto'g'ri hisoblanadi
+            if (fifthSemicolon == -1) {
+                Serial.println("Invalid data: Not enough semicolons.");
+                return; // Dasturni to'xtatib, keyingi takrorlashni kutish
+            }
+
+            // Ma'lumotlarni ajratish va o'qish
+            String temperature = data.substring(0, firstSemicolon);
+            String humidity = data.substring(firstSemicolon + 1, secondSemicolon);
+            String yoritilganlik = data.substring(secondSemicolon + 1, thirdSemicolon);
+            String nurlanish = data.substring(thirdSemicolon + 1, fourthSemicolon);
+            String relayState1 = data.substring(fourthSemicolon + 1, fifthSemicolon);
+            String relayState2 = data.substring(fifthSemicolon + 1);
+
+            // Yangi formatdagi xabar tuzilishi
+            String message = temperature + ";" + humidity + ";" +
+                             yoritilganlik + ";" + nurlanish + ";" +
+                             relayState1 + ";" + relayState2 + ";esp8266";
+
+            // Serverga ma'lumot yuborish
+            webSocket.sendTXT(message.c_str());
+            Serial.println("Sent to WebSocket: " + message);
+        } else {
+            Serial.println("Received empty data.");
+        }
+    }
+}

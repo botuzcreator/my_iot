@@ -22,6 +22,7 @@ function connectWebSocket() {
   };
 
   socket.onmessage = function(event) {
+    console.log('Xabar turi:', typeof event.data);
     // Agar xabar Blob obyekti bo'lsa, uni o'qish kerak
     if (event.data instanceof Blob) {
       // Blob obyektini o'qish uchun FileReader yaratamiz
