@@ -70,13 +70,12 @@ wss.on('connection', function connection(ws) {
     console.log('received: %s', message);
 
     try {
-        const msg = JSON.parse(message);
-        console.log('Parsed message:', msg);
+      const msg = JSON.parse(message);
+      console.log('Parsed message:', msg);
 
-        // Agar xabar 'request-data' so'rovini o'z ichiga olsa va table.js dan kelgan bo'lsa
-        if (msg.type === 'request-data') {
+      switch (msg.type) {
+        case 'request-data':
           console.log('Processing request-data');
-          // Ma'lumotlar bazasidan so'rov yuborish va natijalarni faqat so'rov yuborgan klientga qaytarish
           const sql = `SELECT DATE(sanaVaVaqt) as sana, AVG(harorat) as avgHarorat, AVG(nurlanish) as avgNurlanish FROM sensor_data GROUP BY DATE(sanaVaVaqt) ORDER BY DATE(sanaVaVaqt) DESC LIMIT 5`;
           db.query(sql, (err, results) => {
             if (err) {
@@ -88,33 +87,33 @@ wss.on('connection', function connection(ws) {
             ws.send(JSON.stringify(results));
             console.log('Javob yuborildi:', JSON.stringify(results));
           });
-        }
-      } catch (e) {
-        console.error('Error parsing message:', e.message);
-        // Agar xabar JSON emas bo'lsa, uni barcha klientlarga yuborish
-        wss.clients.forEach(function each(client) {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-          }
-        });
-      }
+          break;
 
-      try {
-        const msg = JSON.parse(message);
-
-        if (msg.type === 'control-data' && devices.has(msg.deviceId)) {
+        case 'control-data':
           console.log(`Qurilma ${msg.deviceId} uchun xabar : ${msg.data}`);
-          const deviceWs = devices.get(msg.deviceId);
-          if (deviceWs) {
+          if (devices.has(msg.deviceId)) {
+            const deviceWs = devices.get(msg.deviceId);
             deviceWs.send(msg.data);  // Device'ga ma'lumot yuborish
             console.log(`Qurilma ${msg.deviceId} uchun xabar yuborildi.`);
           } else {
             console.log(`Device ${msg.deviceId} not found.`);
           }
-        }
-      } catch (e) {
-        console.log('control data emas');
+          break;
+
+        default:
+          console.log('Noma'lum xabar turi:', msg.type);
+          break;
       }
+    } catch (e) {
+      console.error('Error parsing message:', e.message);
+      wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    }
+  });
+});
 
     // Xabarni ajratish
     const messageText = message.toString();

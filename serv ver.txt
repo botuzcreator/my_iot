@@ -1,0 +1,49 @@
+wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message);
+
+    try {
+      const msg = JSON.parse(message);
+      console.log('Parsed message:', msg);
+
+      switch (msg.type) {
+        case 'request-data':
+          console.log('Processing request-data');
+          const sql = `SELECT DATE(sanaVaVaqt) as sana, AVG(harorat) as avgHarorat, AVG(nurlanish) as avgNurlanish FROM sensor_data GROUP BY DATE(sanaVaVaqt) ORDER BY DATE(sanaVaVaqt) DESC LIMIT 5`;
+          db.query(sql, (err, results) => {
+            if (err) {
+              console.error('Error querying database:', err.message);
+              ws.send(JSON.stringify({ error: err.message }));
+              return;
+            }
+            console.log('Query results:', results);
+            ws.send(JSON.stringify(results));
+            console.log('Javob yuborildi:', JSON.stringify(results));
+          });
+          break;
+
+        case 'control-data':
+          console.log(`Qurilma ${msg.deviceId} uchun xabar : ${msg.data}`);
+          if (devices.has(msg.deviceId)) {
+            const deviceWs = devices.get(msg.deviceId);
+            deviceWs.send(msg.data);  // Device'ga ma'lumot yuborish
+            console.log(`Qurilma ${msg.deviceId} uchun xabar yuborildi.`);
+          } else {
+            console.log(`Device ${msg.deviceId} not found.`);
+          }
+          break;
+
+        default:
+          console.log('Noma'lum xabar turi:', msg.type);
+          break;
+      }
+    } catch (e) {
+      console.error('Error parsing message:', e.message);
+      wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    }
+  });
+});
