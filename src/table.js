@@ -1,3 +1,4 @@
+
 const wss = new WebSocket('wss:myiot-production.up.railway.app:443');
 
 wss.onopen = function() {
@@ -19,7 +20,7 @@ wss.onmessage = function(event) {
       updateHaroratTable(data);
       updateNurlanishTable(data);
     } catch (e) {
-      console.error('Malumotlarni matn ko\'rinishida qabul qilindi:', event.data);
+      console.error('Malumotlarni matn ko'rinishida qabul qilindi:', event.data);
       // matn formatida kelgan ma'lumotni ishlov berish
       processTextData(event.data);
     }
@@ -63,13 +64,13 @@ function updateTable(tableBody, data, key) {
 function processTextData(text) {
   // Ma'lumotlarni parsing qilish
   const data = text.split(';');
-  console.log('Split qilingan ma\'lumotlar:', data);
+  console.log('Split qilingan ma'lumotlar:', data);
 
   // Ma'lumotlarni web sahifada ko'rsatish
-  document.getElementById('param1').textContent = data[0] + ' ' + '�C';
+  document.getElementById('param1').textContent = data[0] + ' ' + '°C';
   document.getElementById('param2').textContent = data[1] + ' ' + '%';
   document.getElementById('param3').textContent = data[2] + ' ' + 'lx';
-  document.getElementById('param4').textContent = data[3] + ' ' + 'W/m?';
+  document.getElementById('param4').textContent = data[3] + ' ' + 'W/m²';
   document.getElementById('param5').textContent = data[4];
   document.getElementById('param6').textContent = data[5];
 }
