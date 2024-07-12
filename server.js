@@ -19,20 +19,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// MySQL connection
-const db = mysql.createConnection({
+// MySQL connection pool
+const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT
+  port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
   if (err) {
-    return console.error('Error connecting to MySQL:', err.message);
+    console.error('Error connecting to MySQL:', err.message);
+    return;
   }
   console.log('Connected to MySQL.');
+  connection.release();
 });
 
 // Create sensor_data table
@@ -185,4 +190,21 @@ wss.on('connection', ws => {
 // Close database connection on server exit
 process.on('exit', () => {
   db.end();
+});
+
+// Reconnect to MySQL on connection error
+db.on('error', (err) => {
+  if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+    console.error('MySQL connection lost, reconnecting...');
+    db.getConnection((err, connection) => {
+      if (err) {
+        console.error('Error reconnecting to MySQL:', err.message);
+        return;
+      }
+      console.log('Reconnected to MySQL.');
+      connection.release();
+    });
+  } else {
+    console.error('MySQL error:', err.message);
+  }
 });
