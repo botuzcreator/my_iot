@@ -19,8 +19,8 @@ wss.onmessage = function(event) {
       updateHaroratTable(data);
       updateNurlanishTable(data);
     } catch (e) {
-      console.error('Malumotlarni matn ko\'rinishida qabul qilindi:', event.data);
-      // matn formatida kelgan ma'lumotni ishlov berish
+      console.error('Ma\'lumotlarni matn ko\'rinishida qabul qilindi:', event.data);
+      // Matn formatida kelgan ma'lumotni ishlov berish
       processTextData(event.data);
     }
   }
@@ -72,4 +72,73 @@ function processTextData(text) {
   document.getElementById('param4').textContent = data[3] + ' ' + 'W/m²';
   document.getElementById('param5').textContent = data[4];
   document.getElementById('param6').textContent = data[5];
+
+  // Grafikni yaratish uchun boshlang'ich ma'lumotlar va konfiguratsiya
+  const options = {
+    series: [{
+      name: 'Harorat (°C)',
+      data: []
+    }, {
+      name: 'Namlik (%)',
+      data: []
+    }, {
+      name: 'Nurlanish (lx)',
+      data: []
+    }, {
+      name: 'Yoritilganlik (W/m²)',
+      data: []
+    }],
+    chart: {
+      id: 'area-datetime',
+      type: 'area',
+      height: 240,
+      zoom: {
+        type: 'x',
+        enabled: true,
+        autoScaleYaxis: true
+      },
+      animations: {
+        enabled: true,
+        easing: 'linear',
+        dynamicAnimation: {
+          speed: 1000
+        }
+      },
+      toolbar: {
+        show: true
+      }
+    },
+    stroke: {
+      curve: 'straight'
+    },
+    xaxis: {
+      type: 'datetime',
+      categories: []
+    },
+    tooltip: {
+      x: {
+        format: 'dd/MM/yy HH:mm'
+      },
+      y: {
+        formatter: function(value) {
+          return `${value.toFixed(2)}`;  // Y o'qi qiymatlari uchun formatter
+        }
+      }
+    }
+  };
+
+  // ApexCharts bilan grafikni yaratish
+  const chart = new ApexCharts(document.querySelector("#chart"), options);
+  chart.render();
+
+  // Grafik uchun yangi ma'lumotlarni va vaqt yorlig'ini qo'shish
+  const now = new Date().getTime();
+  options.xaxis.categories.push(now);
+  options.series[0].data.push([now, parseFloat(data[0])]);
+  options.series[1].data.push([now, parseFloat(data[1])]);
+  options.series[2].data.push([now, parseFloat(data[2])]);
+  options.series[3].data.push([now, parseFloat(data[3])]);
+
+  // Grafikni yangilash
+  chart.updateOptions(options);
 }
