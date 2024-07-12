@@ -1,4 +1,4 @@
-const  wss = new WebSocket('wss:myiot-production.up.railway.app:443');
+const wss = new WebSocket('wss://myiot-production.up.railway.app:443');
 
 wss.onopen = function() {
   // Ma'lumotlarni so'rash
@@ -6,22 +6,26 @@ wss.onopen = function() {
 };
 
 wss.onmessage = function(event) {
-  if (event.data instanceof Blob) {
-    // Blob obyektini matnga aylantirish va konsolga chiqarish
-    event.data.text().then(function(text) {
-      console.log('Qabul qilingan xabar (Blob matni):', text);
-      // Agar Blob matnini ham ishlov berish kerak bo'lsa, shu yerda qo'shishingiz mumkin
-    });
-  } else {
-    console.log('Qabul qilingan xabar (Text yoki JSON):', event.data);
-    try {
-      const data = JSON.parse(event.data);
-      updateHaroratTable(data);
-      updateNurlanishTable(data);
-    } catch (e) {
-      console.error('Malumotlarni tahlil qilishda xato yuz berdi:', e);
-      // Agar matn formatida kelgan ma'lumotni ishlov berish kerak bo'lsa, bu yerda qo'shishingiz mumkin
-    }
+  console.log('Qabul qilingan xabar (Text yoki JSON):', event.data);
+
+  try {
+    // JSON formatida bo'lsa, parse qilamiz
+    const data = JSON.parse(event.data);
+    updateHaroratTable(data);
+    updateNurlanishTable(data);
+  } catch (e) {
+    // JSON bo'lmasa, text deb qabul qilamiz va split qilamiz
+    console.log('JSON formatida emas, text deb qabul qilindi');
+    const data = event.data.split(';');
+    console.log('Split qilingan ma\'lumotlar:', data);
+
+    // Ma'lumotlarni web sahifada ko'rsatish
+    document.getElementById('param1').textContent = data[0] + ' ' + '°C';
+    document.getElementById('param2').textContent = data[1] + ' ' + '%';
+    document.getElementById('param3').textContent = data[2] + ' ' + 'lx';
+    document.getElementById('param4').textContent = data[3] + ' ' + 'W/m?';
+    document.getElementById('param5').textContent = data[4];
+    document.getElementById('param6').textContent = data[5];
   }
 };
 
