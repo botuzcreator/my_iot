@@ -1,5 +1,4 @@
-﻿
-const wss = new WebSocket('wss:myiot-production.up.railway.app:443');
+﻿const wss = new WebSocket('wss:myiot-production.up.railway.app:443');
 
 wss.onopen = function() {
   // Ma'lumotlarni so'rash
@@ -20,7 +19,7 @@ wss.onmessage = function(event) {
       updateHaroratTable(data);
       updateNurlanishTable(data);
     } catch (e) {
-      console.error('Malumotlarni matn ko'rinishida qabul qilindi:', event.data);
+      console.error('Malumotlarni matn ko\'rinishida qabul qilindi:', event.data);
       // matn formatida kelgan ma'lumotni ishlov berish
       processTextData(event.data);
     }
@@ -64,7 +63,7 @@ function updateTable(tableBody, data, key) {
 function processTextData(text) {
   // Ma'lumotlarni parsing qilish
   const data = text.split(';');
-  console.log('Split qilingan ma'lumotlar:', data);
+  console.log('Split qilingan ma\'lumotlar:', data);
 
   // Ma'lumotlarni web sahifada ko'rsatish
   document.getElementById('param1').textContent = data[0] + ' ' + '°C';
