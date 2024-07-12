@@ -1,4 +1,4 @@
-const  wss = new WebSocket('wss:myiot-production.up.railway.app:443');
+const wss = new WebSocket('wss:myiot-production.up.railway.app:443');
 
 wss.onopen = function() {
   // Ma'lumotlarni so'rash
@@ -6,7 +6,35 @@ wss.onopen = function() {
 };
 
 wss.onmessage = function(event) {
-  if (event.data instanceof Blob) {
+  console.log('Xabar turi:', typeof event.data);
+  
+  // Agar xabar TEXT obyekti bo'lsa, uni o'qish kerak
+  if (event.data instanceof Text) {
+    // Text obyektini o'qish uchun FileReader yaratamiz
+    const reader = new FileReader();
+
+    // FileReader o'qishni tugatganda ishga tushadigan hodisa
+    reader.onload = function() {
+      // O'qilgan ma'lumotni string sifatida olish
+      const message = reader.result;
+      console.log('Qabul qilingan xabar: ' + message);
+
+      // Ma'lumotlarni parsing qilish
+      const data = message.split(';');
+      console.log('Split qilingan ma\'lumotlar:', data);
+
+      // Ma'lumotlarni web sahifada ko'rsatish
+      document.getElementById('param1').textContent = data[0] + ' ' + '°C';
+      document.getElementById('param2').textContent = data[1] + ' ' + '%';
+      document.getElementById('param3').textContent = data[2] + ' ' + 'lx';
+      document.getElementById('param4').textContent = data[3] + ' ' + 'W/m?';
+      document.getElementById('param5').textContent = data[4];
+      document.getElementById('param6').textContent = data[5];
+    };
+
+    // Text obyektini o'qishni boshlaymiz
+    reader.readAsText(event.data);
+  } else if (event.data instanceof Blob) {
     // Blob obyektini matnga aylantirish va konsolga chiqarish
     event.data.text().then(function(text) {
       console.log('Qabul qilingan xabar (Blob matni):', text);
