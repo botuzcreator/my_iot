@@ -86,7 +86,7 @@
       },
       animations: {
         enabled: true,
-        easing: 'linear',
+        easing: 'easeinout',
         dynamicAnimation: {
           speed: 1000
         }

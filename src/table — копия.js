@@ -77,7 +77,7 @@
     }],
     chart: {
       id: 'area-datetime',
-      type: 'area',
+      type: 'line', // Change to 'line' for sharp lines
       height: 240,
       zoom: {
         type: 'x',
@@ -96,7 +96,13 @@
       }
     },
     stroke: {
-      curve: 'straight'
+      curve: 'straight' // Make lines straight
+    },
+    markers: {
+      size: 5, // Size of the marker points
+    },
+    dataLabels: {
+      enabled: false // Hide data labels
     },
     xaxis: {
       type: 'datetime',
