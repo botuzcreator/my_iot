@@ -149,6 +149,12 @@ function processTextData(text) {
   seriesData.yoruglik.push([now, parseFloat(data[3])]);
 
   // Grafikni yangilash
+  chart.updateOptions({
+    xaxis: {
+      categories: seriesData.categories
+    }
+  });
+
   chart.updateSeries([{
     name: 'Harorat (°C)',
     data: seriesData.harorat
@@ -162,11 +168,4 @@ function processTextData(text) {
     name: 'Yoritilganlik (W/m²)',
     data: seriesData.yoruglik
   }], true);
-
-  // Grafikning vaqt o'qi
-  chart.updateOptions({
-    xaxis: {
-      categories: seriesData.categories
-    }
-  });
 }
