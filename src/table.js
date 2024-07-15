@@ -59,6 +59,73 @@ function updateTable(tableBody, data, key) {
   });
 }
 
+// Grafik uchun boshlang'ich konfiguratsiya
+const options = {
+  series: [{
+    name: 'Harorat (°C)',
+    data: []
+  }, {
+    name: 'Namlik (%)',
+    data: []
+  }, {
+    name: 'Nurlanish (lx)',
+    data: []
+  }, {
+    name: 'Yoritilganlik (W/m²)',
+    data: []
+  }],
+  chart: {
+    id: 'area-datetime',
+    type: 'area',
+    height: 240,
+    zoom: {
+      type: 'x',
+      enabled: true,
+      autoScaleYaxis: true
+    },
+    animations: {
+      enabled: true,
+      easing: 'linear',
+      dynamicAnimation: {
+        speed: 1000
+      }
+    },
+    toolbar: {
+      show: true
+    }
+  },
+  stroke: {
+    curve: 'straight'
+  },
+  xaxis: {
+    type: 'datetime',
+    categories: []
+  },
+  tooltip: {
+    x: {
+      format: 'dd/MM/yy HH:mm'
+    },
+    y: {
+      formatter: function(value) {
+        return `${value.toFixed(2)}`;  // Y o'qi qiymatlari uchun formatter
+      }
+    }
+  }
+};
+
+// Grafik ma'lumotlarini saqlash uchun obyekt
+const seriesData = {
+  categories: [],
+  harorat: [],
+  namlik: [],
+  nurlanish: [],
+  yoruglik: []
+};
+
+// ApexCharts bilan grafikni yaratish
+const chart = new ApexCharts(document.querySelector("#chart"), options);
+chart.render();
+
 // Matnli ma'lumotlarni qayta ishlash funksiyasi
 function processTextData(text) {
   // Ma'lumotlarni parsing qilish
@@ -73,72 +140,33 @@ function processTextData(text) {
   document.getElementById('param5').textContent = data[4];
   document.getElementById('param6').textContent = data[5];
 
-  // Grafikni yaratish uchun boshlang'ich ma'lumotlar va konfiguratsiya
-  const options = {
-    series: [{
-      name: 'Harorat (°C)',
-      data: []
-    }, {
-      name: 'Namlik (%)',
-      data: []
-    }, {
-      name: 'Nurlanish (lx)',
-      data: []
-    }, {
-      name: 'Yoritilganlik (W/m²)',
-      data: []
-    }],
-    chart: {
-      id: 'area-datetime',
-      type: 'area',
-      height: 240,
-      zoom: {
-        type: 'x',
-        enabled: true,
-        autoScaleYaxis: true
-      },
-      animations: {
-        enabled: true,
-        easing: 'linear',
-        dynamicAnimation: {
-          speed: 1000
-        }
-      },
-      toolbar: {
-        show: true
-      }
-    },
-    stroke: {
-      curve: 'straight'
-    },
-    xaxis: {
-      type: 'datetime',
-      categories: []
-    },
-    tooltip: {
-      x: {
-        format: 'dd/MM/yy HH:mm'
-      },
-      y: {
-        formatter: function(value) {
-          return `${value.toFixed(2)}`;  // Y o'qi qiymatlari uchun formatter
-        }
-      }
-    }
-  };
-
-  // ApexCharts bilan grafikni yaratish
-  const chart = new ApexCharts(document.querySelector("#chart"), options);
-  chart.render();
-
   // Grafik uchun yangi ma'lumotlarni va vaqt yorlig'ini qo'shish
   const now = new Date().getTime();
-  options.xaxis.categories.push(now);
-  options.series[0].data.push([now, parseFloat(data[0])]);
-  options.series[1].data.push([now, parseFloat(data[1])]);
-  options.series[2].data.push([now, parseFloat(data[2])]);
-  options.series[3].data.push([now, parseFloat(data[3])]);
+  seriesData.categories.push(now);
+  seriesData.harorat.push([now, parseFloat(data[0])]);
+  seriesData.namlik.push([now, parseFloat(data[1])]);
+  seriesData.nurlanish.push([now, parseFloat(data[2])]);
+  seriesData.yoruglik.push([now, parseFloat(data[3])]);
 
   // Grafikni yangilash
-  chart.updateOptions(options);
+  chart.updateSeries([{
+    name: 'Harorat (°C)',
+    data: seriesData.harorat
+  }, {
+    name: 'Namlik (%)',
+    data: seriesData.namlik
+  }, {
+    name: 'Nurlanish (lx)',
+    data: seriesData.nurlanish
+  }, {
+    name: 'Yoritilganlik (W/m²)',
+    data: seriesData.yoruglik
+  }]);
+
+  // Grafikning vaqt o'qi
+  chart.updateOptions({
+    xaxis: {
+      categories: seriesData.categories
+    }
+  });
 }
