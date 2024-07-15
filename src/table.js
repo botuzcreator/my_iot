@@ -161,7 +161,7 @@ function processTextData(text) {
   }, {
     name: 'Yoritilganlik (W/m²)',
     data: seriesData.yoruglik
-  }]);
+  }], true);
 
   // Grafikning vaqt o'qi
   chart.updateOptions({
